@@ -59,6 +59,9 @@ public class CaveManager : MonoBehaviour
             //GameObject thisCamera = Instantiate(ViewerCameraPrefab, new Vector3(0, 0, 0), Quaternion.identity, viewer.transform);
             GameObject thisCamera = Instantiate(ViewerCameraPrefab, new Vector3(0, 0, 0), Quaternion.identity);
             thisCamera.name = "Screen Camera " + i;
+            thisCamera.tag = "Point Cloud Render Camera";
+            thisCamera.GetComponent<Camera>().nearClipPlane = 0.1f;
+            thisCamera.GetComponent<Camera>().farClipPlane = 10000;
             thisCamera.GetComponent<Camera>().targetTexture = renderTextures[i];
             thisCamera.GetComponent<Camera>().cullingMask = ~(1 << LayerMask.NameToLayer("CompCamera"));
             screenCameras.Add(thisCamera);

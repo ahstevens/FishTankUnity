@@ -642,7 +642,7 @@ public class pointCloudManager : MonoBehaviour
         EditorSceneManager.sceneSaved += OnSceneSaveCallback;
 #endif
 
-        if (cam == Camera.main)
+        if (cam.tag == "Point Cloud Render Camera")
         {
             Matrix4x4 cameraToWorld = cam.cameraToWorldMatrix;
             cameraToWorld = cameraToWorld.inverse;
