@@ -33,7 +33,7 @@ public class FishTankSurface : MonoBehaviour
         up = (topLeft - bottomLeft).normalized;
 
         normal = Vector3.Cross(up, right).normalized;
-
+        
         m = Matrix4x4.zero;
         m[0, 0] = right.x;
         m[0, 1] = right.y;
@@ -52,6 +52,7 @@ public class FishTankSurface : MonoBehaviour
 
 }
 
+#if UNITY_EDITOR
 [CustomEditor(typeof(FishTankSurface))]
 public class FishTankSurfaceVisualizaer : Editor
 {
@@ -69,7 +70,7 @@ public class FishTankSurfaceVisualizaer : Editor
         // display object "value" in scene
         GUI.color = color;
         Handles.Label(center, "Screen " + t.screenNumber.ToString());
-
+    
         Handles.color = Color.black;
         Handles.Label(t.topLeft, "Top Left");
         Handles.Label(t.topRight, "Top Right");
@@ -77,3 +78,4 @@ public class FishTankSurfaceVisualizaer : Editor
         Handles.Label(t.bottomRight, "Bottom Right");
     }
 }
+#endif

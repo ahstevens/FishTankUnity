@@ -645,6 +645,7 @@ public class pointCloudManager : MonoBehaviour
         if (cam.tag == "Point Cloud Render Camera")
         {
             Matrix4x4 cameraToWorld = cam.cameraToWorldMatrix;
+
             cameraToWorld = cameraToWorld.inverse;
             float[] cameraToWorldArray = new float[16];
             for (int i = 0; i < 4; i++)
@@ -658,7 +659,7 @@ public class pointCloudManager : MonoBehaviour
 
             cam.enabled = true;
 
-            Matrix4x4 projection = GL.GetGPUProjectionMatrix(cam.projectionMatrix, true);
+            Matrix4x4 projection =  GL.GetGPUProjectionMatrix(cam.projectionMatrix, true);
 
             float[] projectionArray = new float[16];
             for (int i = 0; i < 4; i++)
