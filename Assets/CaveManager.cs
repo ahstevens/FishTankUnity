@@ -33,6 +33,11 @@ public class CaveManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        if (fishTankParent == null)
+        {
+
+        }
+
         caveScreens = new List<GameObject>();
         screenCameras = new List<GameObject>();
         renderTextures = new List<RenderTexture>();
@@ -86,7 +91,7 @@ public class CaveManager : MonoBehaviour
     {
         ResizeCompositingQuads();
 
-        RecalculateProjectionsFromViewpoint(viewer.transform.position);
+        RecalculateProjectionsFromViewpoint(viewer.transform.localPosition);
 
     }//end Update()
 
@@ -96,6 +101,8 @@ public class CaveManager : MonoBehaviour
         {
             var fts = caveScreens[i].GetComponent<FishTankSurface>();
 
+            Vector3 pe = fishTankParent.transform.TransformPoint(viewpoint);
+
             Vector3 pa = fishTankParent.transform.TransformPoint(fts.bottomLeft);
             Vector3 pb = fishTankParent.transform.TransformPoint(fts.bottomRight);
             Vector3 pc = fishTankParent.transform.TransformPoint(fts.topLeft);
@@ -104,15 +111,14 @@ public class CaveManager : MonoBehaviour
             Vector3 vr = fishTankParent.transform.TransformDirection(fts.right);
             Vector3 vu = fishTankParent.transform.TransformDirection(fts.up);
             Vector3 vn = fishTankParent.transform.TransformDirection(fts.normal);
-            Matrix4x4 M = fts.m;
 
             //From eye to projection screen corners
-            Vector3 va = pa - viewpoint;
-            Vector3 vb = pb - viewpoint;
-            Vector3 vc = pc - viewpoint;
-            Vector3 vd = pd - viewpoint;
+            Vector3 va = pa - pe;
+            Vector3 vb = pb - pe;
+            Vector3 vc = pc - pe;
+            Vector3 vd = pd - pe;
 
-            Vector3 viewDir = viewpoint + va + vb + vc + vd;
+            Vector3 viewDir = pe + va + vb + vc + vd;
 
             //distance from eye to projection screen plane
             float d = -Vector3.Dot(va, vn);
@@ -128,14 +134,16 @@ public class CaveManager : MonoBehaviour
             float t = Vector3.Dot(vu, vc) * nearOverDist;
             Matrix4x4 P = Matrix4x4.Frustum(l, r, b, t, n, f);
 
-            //Translation to eye position
-            Matrix4x4 T = Matrix4x4.Translate(-viewpoint);
-
-            //Matrix4x4 R = Matrix4x4.Rotate( Quaternion.Inverse(transform.rotation) * fts.transform.rotation); //may need to replace with center of screen location?
-            
-            screenCameras[i].GetComponent<Camera>().worldToCameraMatrix = M * T;// R * T;
-
             screenCameras[i].GetComponent<Camera>().projectionMatrix = P;
+            screenCameras[i].GetComponent<Camera>().nonJitteredProjectionMatrix = P;
+
+            Matrix4x4 M = fts.m;
+
+            //Translation to eye position
+            Matrix4x4 T = Matrix4x4.Translate(-pe);
+            Matrix4x4 R = Matrix4x4.Rotate(Quaternion.Inverse(fishTankParent.transform.localRotation));
+            screenCameras[i].GetComponent<Camera>().worldToCameraMatrix = M * R * T;
+
         }//end for i (each screenCamera)
     }
 

@@ -62,20 +62,26 @@ public class FishTankSurfaceVisualizaer : Editor
     {
         var t = target as FishTankSurface;
         var tr = t.transform;
-        var center = t.bottomLeft + ((t.topLeft - t.bottomLeft) + (t.bottomRight - t.bottomLeft)) * 0.5f;        
+        var center = tr.TransformPoint( t.bottomLeft + ((t.topLeft - t.bottomLeft) + (t.bottomRight - t.bottomLeft)) * 0.5f);
         // display an orange disc where the object is
         var color = new Color(1, 0.8f, 0.4f, 1);
         Handles.color = color;
-        Handles.DrawPolyLine(t.topLeft, t.topRight, t.bottomRight, t.bottomLeft, t.topLeft);
+        Handles.DrawPolyLine(
+            tr.TransformPoint(t.topLeft),
+            tr.TransformPoint(t.topRight),
+            tr.TransformPoint(t.bottomRight),
+            tr.TransformPoint(t.bottomLeft),
+            tr.TransformPoint(t.topLeft)
+        );
         // display object "value" in scene
         GUI.color = color;
         Handles.Label(center, "Screen " + t.screenNumber.ToString());
     
         Handles.color = Color.black;
-        Handles.Label(t.topLeft, "Top Left");
-        Handles.Label(t.topRight, "Top Right");
-        Handles.Label(t.bottomLeft, "Bottom Left");
-        Handles.Label(t.bottomRight, "Bottom Right");
+        Handles.Label(tr.TransformPoint(t.topLeft), "Top Left");
+        Handles.Label(tr.TransformPoint(t.topRight), "Top Right");
+        Handles.Label(tr.TransformPoint(t.bottomLeft), "Bottom Left");
+        Handles.Label(tr.TransformPoint(t.bottomRight), "Bottom Right");
     }
 }
 #endif
