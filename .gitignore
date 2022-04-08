@@ -71,3 +71,14 @@ crashlytics-build.properties
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# Debug files generated from Point Cloud Plugin
+camera.txt
+DLL_START.txt
+ERRORS.txt
+File_Load_Log.txt
+OctreeEvents.txt
+precision.txt
+screens.txt
+testThread.txt
+Validate.txt
