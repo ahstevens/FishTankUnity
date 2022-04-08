@@ -108,6 +108,9 @@ public class pointCloudManager : MonoBehaviour
     [DllImport("PointCloudPlugin")]
     private static extern bool unLoad(IntPtr IDToFill);
 
+    [DllImport("PointCloudPlugin")]
+    private static extern void setScreenIndex(int newScreenIndex);
+
     List<Vector3> vertexData;
     List<Color32> vertexColors;
     public GameObject pointCloudGameObject;
@@ -642,6 +645,8 @@ public class pointCloudManager : MonoBehaviour
         //setHighlightDeletedPointsActive(false);
     }
 
+    static int screenIndex = 0;
+
     public static void OnPostRenderCallback(Camera cam)
     {
 #if UNITY_EDITOR
@@ -651,6 +656,13 @@ public class pointCloudManager : MonoBehaviour
 
         if (cam.tag == "Point Cloud Render Camera" && renderPointClouds)
         {
+
+            screenIndex++;
+            if (screenIndex > 5)
+                screenIndex = 0;
+
+            setScreenIndex(screenIndex);
+
             Matrix4x4 cameraToWorld = cam.cameraToWorldMatrix;
 
             cameraToWorld = cameraToWorld.inverse;
@@ -743,6 +755,7 @@ public class pointCloudManager : MonoBehaviour
                 pointerWorld.Free();
             }
 
+            setScreenIndex(screenIndex);
             GL.IssuePluginEvent(GetRenderEventFunc(), 1);
         }
     }
