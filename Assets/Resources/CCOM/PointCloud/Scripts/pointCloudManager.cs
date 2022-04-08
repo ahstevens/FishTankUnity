@@ -125,6 +125,8 @@ public class pointCloudManager : MonoBehaviour
     public static bool isLookingForClosestPoint = false;
     public static bool highlightDeletedPoints = false;
 
+    private static bool renderPointClouds = true;
+
     static private GEOReference getReferenceScript()
     {
         GameObject geoReference = GameObject.Find("UnityZeroGeoReference");
@@ -627,6 +629,11 @@ public class pointCloudManager : MonoBehaviour
 #endif
         }
 
+        if (Input.GetKeyDown(KeyCode.P))
+        {
+            renderPointClouds = !renderPointClouds;
+        }
+
         //if (highlightDeletedPoints)
         //{
         //    UpdateDeletionSpherePositionFromUnity(transform.position, transform.localScale.x / 2.0f);
@@ -642,7 +649,7 @@ public class pointCloudManager : MonoBehaviour
         EditorSceneManager.sceneSaved += OnSceneSaveCallback;
 #endif
 
-        if (cam.tag == "Point Cloud Render Camera")
+        if (cam.tag == "Point Cloud Render Camera" && renderPointClouds)
         {
             Matrix4x4 cameraToWorld = cam.cameraToWorldMatrix;
 
