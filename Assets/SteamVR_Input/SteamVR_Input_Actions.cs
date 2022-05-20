@@ -23,6 +23,8 @@ namespace Valve.VR
         
         private static SteamVR_Action_Boolean p_default_Fly;
         
+        private static SteamVR_Action_Boolean p_default_ResetView;
+        
         private static SteamVR_Action_Vibration p_default_Haptic;
         
         public static SteamVR_Action_Pose default_BatPose
@@ -49,6 +51,14 @@ namespace Valve.VR
             }
         }
         
+        public static SteamVR_Action_Boolean default_ResetView
+        {
+            get
+            {
+                return SteamVR_Actions.p_default_ResetView.GetCopy<SteamVR_Action_Boolean>();
+            }
+        }
+        
         public static SteamVR_Action_Vibration default_Haptic
         {
             get
@@ -63,11 +73,13 @@ namespace Valve.VR
                     SteamVR_Actions.default_BatPose,
                     SteamVR_Actions.default_SetFlyingReference,
                     SteamVR_Actions.default_Fly,
+                    SteamVR_Actions.default_ResetView,
                     SteamVR_Actions.default_Haptic};
             Valve.VR.SteamVR_Input.actionsIn = new Valve.VR.ISteamVR_Action_In[] {
                     SteamVR_Actions.default_BatPose,
                     SteamVR_Actions.default_SetFlyingReference,
-                    SteamVR_Actions.default_Fly};
+                    SteamVR_Actions.default_Fly,
+                    SteamVR_Actions.default_ResetView};
             Valve.VR.SteamVR_Input.actionsOut = new Valve.VR.ISteamVR_Action_Out[] {
                     SteamVR_Actions.default_Haptic};
             Valve.VR.SteamVR_Input.actionsVibration = new Valve.VR.SteamVR_Action_Vibration[] {
@@ -76,14 +88,16 @@ namespace Valve.VR
                     SteamVR_Actions.default_BatPose};
             Valve.VR.SteamVR_Input.actionsBoolean = new Valve.VR.SteamVR_Action_Boolean[] {
                     SteamVR_Actions.default_SetFlyingReference,
-                    SteamVR_Actions.default_Fly};
+                    SteamVR_Actions.default_Fly,
+                    SteamVR_Actions.default_ResetView};
             Valve.VR.SteamVR_Input.actionsSingle = new Valve.VR.SteamVR_Action_Single[0];
             Valve.VR.SteamVR_Input.actionsVector2 = new Valve.VR.SteamVR_Action_Vector2[0];
             Valve.VR.SteamVR_Input.actionsVector3 = new Valve.VR.SteamVR_Action_Vector3[0];
             Valve.VR.SteamVR_Input.actionsSkeleton = new Valve.VR.SteamVR_Action_Skeleton[0];
             Valve.VR.SteamVR_Input.actionsNonPoseNonSkeletonIn = new Valve.VR.ISteamVR_Action_In[] {
                     SteamVR_Actions.default_SetFlyingReference,
-                    SteamVR_Actions.default_Fly};
+                    SteamVR_Actions.default_Fly,
+                    SteamVR_Actions.default_ResetView};
         }
         
         private static void PreInitActions()
@@ -91,6 +105,7 @@ namespace Valve.VR
             SteamVR_Actions.p_default_BatPose = ((SteamVR_Action_Pose)(SteamVR_Action.Create<SteamVR_Action_Pose>("/actions/default/in/BatPose")));
             SteamVR_Actions.p_default_SetFlyingReference = ((SteamVR_Action_Boolean)(SteamVR_Action.Create<SteamVR_Action_Boolean>("/actions/default/in/SetFlyingReference")));
             SteamVR_Actions.p_default_Fly = ((SteamVR_Action_Boolean)(SteamVR_Action.Create<SteamVR_Action_Boolean>("/actions/default/in/Fly")));
+            SteamVR_Actions.p_default_ResetView = ((SteamVR_Action_Boolean)(SteamVR_Action.Create<SteamVR_Action_Boolean>("/actions/default/in/ResetView")));
             SteamVR_Actions.p_default_Haptic = ((SteamVR_Action_Vibration)(SteamVR_Action.Create<SteamVR_Action_Vibration>("/actions/default/out/Haptic")));
         }
     }

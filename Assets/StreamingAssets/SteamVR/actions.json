@@ -15,6 +15,10 @@
       "requirement": "mandatory"
     },
     {
+      "name": "/actions/default/in/ResetView",
+      "type": "boolean"
+    },
+    {
       "name": "/actions/default/out/Haptic",
       "type": "vibration"
     }

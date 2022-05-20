@@ -21,7 +21,7 @@ public class CameraVisualizer : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
-        if (cm.GetCaveScreens() == null)
+        if (cm == null || cm.GetCaveScreens() == null)
             return;
 
         //foreach (var s in caveScreens)

@@ -33,28 +33,36 @@
 
 using UnityEngine;
 using Valve.VR;
+using System;
+using System.IO;
 
 public class XRFlyingInterface : MonoBehaviour
 {
     public bool desktopFlyingMode;
+
+    public string calibrationFile = "xrflyingcalibration.txt";
 
     public float movementThreshold = 0.01f;
     public float translationMultiplier = 100f;
     public float rotationMultiplier = 0.05f;
 
     public GameObject flyingVehicle;
-    
+    public GameObject pilotView;
+
     public GameObject bat;
 
     public SteamVR_ActionSet actionSet;
     public SteamVR_Action_Boolean setReference;
     public SteamVR_Action_Boolean fly;
+    public SteamVR_Action_Boolean resetView;
 
     private bool flying;
     private bool beyondThreshold;
     private GameObject trackingReference;
     private GameObject flyingOrigin;
 
+    private Vector3 beginningCameraPosition;
+    private Quaternion beginningCameraRotation;
 
     // Start is called before the first frame update
     void Start()
@@ -62,16 +70,25 @@ public class XRFlyingInterface : MonoBehaviour
         if (flyingVehicle == null)
             flyingVehicle = this.gameObject;
 
+        beginningCameraPosition = flyingVehicle.transform.position;
+        beginningCameraRotation = flyingVehicle.transform.rotation;
+
         actionSet.Activate();
 
         flying = false;
         beyondThreshold = false;
 
+        trackingReference = new GameObject("Tracking Reference");
+
         // In VR, tracking reference can just be the scene origin
         // In Desktop mode, the tracking reference is relative to the display.
-        if (!desktopFlyingMode)
+        if (desktopFlyingMode)
         {
-            trackingReference = new GameObject("Tracking Reference");
+            if (!LoadCalibration(trackingReference))
+                Destroy(trackingReference);
+        }
+        else
+        {
             trackingReference.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
         }
     }
@@ -79,8 +96,11 @@ public class XRFlyingInterface : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (setReference.GetState(SteamVR_Input_Sources.Any) && desktopFlyingMode)
-            OnSetReference();
+        if (setReference.GetState(SteamVR_Input_Sources.Any) && !setReference.GetLastState(SteamVR_Input_Sources.Any) && desktopFlyingMode)
+            OnSetReference(); 
+        
+        if (resetView.GetState(SteamVR_Input_Sources.Any) && !resetView.GetLastState(SteamVR_Input_Sources.Any) && desktopFlyingMode)
+            ResetView();
 
         if (fly.GetState(SteamVR_Input_Sources.Any) && !flying)
             OnBeginFly();
@@ -91,8 +111,9 @@ public class XRFlyingInterface : MonoBehaviour
 
         if (flying)
         {
-            //Debug.Log("Flying...");
+            //Debug.Log("Flying...");            
             Vector3 relativeTranslation = bat.transform.position - flyingOrigin.transform.position;
+            Debug.DrawRay(flyingOrigin.transform.position, relativeTranslation);
             float relativeTranslationMag = relativeTranslation.magnitude;
 
             if (relativeTranslationMag >= movementThreshold)
@@ -103,13 +124,14 @@ public class XRFlyingInterface : MonoBehaviour
                     //Debug.Log("Moving...");
                 }
 
-
                 float displacementCubed = Mathf.Pow(relativeTranslationMag, 3);
 
-                Vector3 cameraOffset = trackingReference.transform.InverseTransformDirection(relativeTranslation);
-                cameraOffset = flyingVehicle.transform.TransformDirection(cameraOffset).normalized;
+                Vector3 cameraOffset = relativeTranslation;
+                //cameraOffset = pilotView.transform.TransformDirection(cameraOffset).normalized;
 
                 flyingVehicle.transform.position = flyingVehicle.transform.position + cameraOffset * displacementCubed * translationMultiplier;
+
+                Debug.DrawRay(flyingVehicle.transform.position, cameraOffset * displacementCubed * translationMultiplier * 10);
             }
             else
             {
@@ -120,9 +142,11 @@ public class XRFlyingInterface : MonoBehaviour
                 }
             }
 
-            Quaternion relativeRotation = Quaternion.Inverse(flyingOrigin.transform.rotation) * bat.transform.rotation;
+            Quaternion offset = pilotView.transform.rotation;
 
-            flyingVehicle.transform.rotation *= Quaternion.Slerp(Quaternion.identity, relativeRotation, rotationMultiplier);
+            Quaternion relativeRotationBat = Quaternion.Inverse(offset) * (Quaternion.Inverse(flyingOrigin.transform.rotation) * bat.transform.rotation) * offset;
+
+            flyingVehicle.transform.rotation *= Quaternion.Slerp(Quaternion.identity, relativeRotationBat, rotationMultiplier);
         }
     }
 
@@ -134,6 +158,8 @@ public class XRFlyingInterface : MonoBehaviour
         trackingReference.transform.SetPositionAndRotation(bat.transform.position, bat.transform.rotation);
         
         Debug.Log("Tracking Reference Set!");
+
+        SaveCalibration(trackingReference.transform.position, trackingReference.transform.rotation);										
     }
 
     void OnBeginFly()
@@ -161,5 +187,76 @@ public class XRFlyingInterface : MonoBehaviour
             beyondThreshold = false;
             Debug.Log("Flying ended");
         }
+    }
+
+    void ResetView()
+    {
+        Debug.Log("Reset View");
+        this.transform.rotation = beginningCameraRotation;
+        this.transform.position = beginningCameraPosition;
+    }
+
+    void SaveCalibration(Vector3 position, Quaternion rotation)
+    {
+        File.WriteAllText(Application.dataPath + "/" + calibrationFile, position.ToString("F5") + '\n' + rotation.ToString("F5"));
+
+        Debug.Log("Calibration saved to " + Application.dataPath + "/" + calibrationFile);
+    }
+
+    bool LoadCalibration(GameObject trackingReference)
+    {
+        var cal = File.ReadAllLines(Application.dataPath + "/" + calibrationFile);
+
+        if (cal.Length != 2)
+            return false;
+
+        // remove parens
+        for (int i = 0; i < 2; ++i)
+        {
+            if (cal[i].StartsWith("(") && cal[i].EndsWith(")"))
+                cal[i] = cal[i].Substring(1, cal[i].Length - 2);
+            else
+                return false;            
+        }
+
+        // split the items
+        string[] posArray = cal[0].Split(',');
+        string[] rotArray = cal[1].Split(',');
+
+        if (posArray.Length != 3 || rotArray.Length != 4)
+            return false;
+
+        // store as a Vector3
+        try
+        {
+            trackingReference.transform.position = new Vector3(
+                float.Parse(posArray[0]),
+                float.Parse(posArray[1]),
+                float.Parse(posArray[2]));
+        }
+        catch (Exception e)
+        {
+            Debug.Log("Error creating position vector: " + e);
+            return false;
+        }
+
+        // store as a Quaternion
+        try
+        {
+            trackingReference.transform.rotation = new Quaternion(
+                float.Parse(rotArray[0]),
+                float.Parse(rotArray[1]),
+                float.Parse(rotArray[2]),
+                float.Parse(rotArray[3]));
+        }
+        catch (Exception e)
+        {
+            Debug.Log("Error creating rotation quaternion: " + e);
+            return false;
+        }
+
+        Debug.Log("Calibration read from " + Application.dataPath + "/" + calibrationFile);
+
+        return true;
     }
 }

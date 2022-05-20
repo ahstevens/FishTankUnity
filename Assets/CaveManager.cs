@@ -26,18 +26,9 @@ public class CaveManager : MonoBehaviour
     private int numberScreens;
     private float lastCompositingCameraOrthoSize;
 
-    private void OnValidate()
-    {
-    }
-
     // Start is called before the first frame update
     void Start()
     {
-        if (fishTankParent == null)
-        {
-
-        }
-
         caveScreens = new List<GameObject>();
         screenCameras = new List<GameObject>();
         renderTextures = new List<RenderTexture>();
@@ -71,8 +62,7 @@ public class CaveManager : MonoBehaviour
             thisCamera.GetComponent<Camera>().targetTexture = renderTextures[i];
             thisCamera.GetComponent<Camera>().cullingMask = ~(1 << LayerMask.NameToLayer("CompCamera"));
             thisCamera.transform.parent = viewer.transform;
-            thisCamera.transform.position = viewer.transform.position;
-            thisCamera.transform.rotation = viewer.transform.rotation;
+            thisCamera.transform.SetPositionAndRotation(viewer.transform.position, viewer.transform.rotation);
 
             screenCameras.Add(thisCamera);
 
@@ -82,8 +72,6 @@ public class CaveManager : MonoBehaviour
 
             CompositingQuads.Add(thisCompositingQuad);
         }//for each screen
-
-        ResizeCompositingQuads();
     }
 
     // Update is called once per frame
@@ -94,6 +82,37 @@ public class CaveManager : MonoBehaviour
         RecalculateProjectionsFromViewpoint(viewer.transform.localPosition);
 
     }//end Update()
+
+    void ResizeCompositingQuads()
+    {
+        float orthoSize = compositingCamera.GetComponent<Camera>().orthographicSize * 2.0f;
+        float[] widths = new float[numberScreens];
+        if (orthoSize != lastCompositingCameraOrthoSize)
+        {
+            float totalWidth = 0;
+            for (int i = 0; i < numberScreens; i++)
+            {
+                var fts = caveScreens[i].GetComponent<FishTankSurface>();
+                //set size
+                CompositingQuads[i].transform.localScale = new Vector3(orthoSize * fts.aspectRatio, orthoSize, 1);
+                widths[i] = orthoSize * fts.aspectRatio;
+                totalWidth += widths[i];
+            }
+
+            //figure out positioning
+            float xPos = -(totalWidth * 0.5f);
+            for (int i = 0; i < numberScreens; i++)
+            {
+                //set size
+                Vector3 newPos = CompositingQuads[i].transform.localPosition;
+                newPos.x = xPos + (widths[i] / 2.0f);
+                CompositingQuads[i].transform.localPosition = newPos;
+                xPos += widths[i];
+            }
+
+            lastCompositingCameraOrthoSize = orthoSize;
+        }//end if orthosize changed
+    }
 
     void RecalculateProjectionsFromViewpoint(Vector3 viewpoint)
     {
@@ -134,101 +153,19 @@ public class CaveManager : MonoBehaviour
             float t = Vector3.Dot(vu, vc) * nearOverDist;
             Matrix4x4 P = Matrix4x4.Frustum(l, r, b, t, n, f);
 
-            screenCameras[i].GetComponent<Camera>().projectionMatrix = P;
-            screenCameras[i].GetComponent<Camera>().nonJitteredProjectionMatrix = P;
-
             Matrix4x4 M = fts.m;
 
             //Translation to eye position
             Matrix4x4 T = Matrix4x4.Translate(-pe);
-            Matrix4x4 R = Matrix4x4.Rotate(Quaternion.Inverse(fishTankParent.transform.localRotation));
-            screenCameras[i].GetComponent<Camera>().worldToCameraMatrix = M * R * T;
+            Matrix4x4 R = Matrix4x4.Rotate(Quaternion.Inverse(fishTankParent.transform.rotation));
+
+            var sc = screenCameras[i].GetComponent<Camera>();
+            sc.projectionMatrix = P;
+            sc.nonJitteredProjectionMatrix = P;
+            sc.worldToCameraMatrix = M * R * T;
 
         }//end for i (each screenCamera)
     }
-
-    void ResizeCompositingQuads()
-    {
-        float orthoSize = compositingCamera.GetComponent<Camera>().orthographicSize * 2.0f;
-        float[] widths = new float[numberScreens];
-        if (orthoSize != lastCompositingCameraOrthoSize)
-        {
-            float totalWidth = 0;
-            for (int i = 0; i < numberScreens; i++)
-            {
-                var fts = caveScreens[i].GetComponent<FishTankSurface>();
-                //set size
-                CompositingQuads[i].transform.localScale = new Vector3(orthoSize * fts.aspectRatio, orthoSize, 1);
-                widths[i] = orthoSize * fts.aspectRatio;
-                totalWidth += widths[i];
-            }
-
-            //figure out positioning
-            float xPos = -(totalWidth * 0.5f);
-            for (int i = 0; i < numberScreens; i++)
-            {
-                //set size
-                Vector3 newPos = CompositingQuads[i].transform.localPosition;
-                newPos.x = xPos + (widths[i] / 2.0f);
-                CompositingQuads[i].transform.localPosition = newPos;
-                xPos += widths[i];
-            }
-
-            lastCompositingCameraOrthoSize = orthoSize;
-        }//end if orthosize changed
-    }
-
-    //void spawnNewQuad(Transform parentScreenTransform, string name, Vector3 UL, Vector3 UR, Vector3 LR, Vector3 LL)
-    //{
-    //    GameObject newQuad = new GameObject(name);
-    //    newQuad.transform.parent = parentScreenTransform;
-    //
-    //    MeshRenderer meshRenderer = newQuad.AddComponent<MeshRenderer>();
-    //    meshRenderer.sharedMaterial = new Material(Shader.Find("Standard"));
-    //
-    //    MeshFilter meshFilter = newQuad.AddComponent<MeshFilter>();
-    //
-    //    Mesh mesh = new Mesh();
-    //
-    //    Vector3[] vertices = new Vector3[4];
-    //    vertices[0] = LL;
-    //    vertices[1] = LR;
-    //    vertices[2] = UL;
-    //    vertices[3] = UR;
-    //    mesh.vertices = vertices;
-    //
-    //    int[] tris = new int[12]
-    //    {
-    //        1, 2, 0,
-    //        1, 3, 2,
-    //        0, 2, 1,
-    //        2, 3, 1
-    //    };
-    //    mesh.triangles = tris;
-    //
-    //    Vector3[] normals = new Vector3[4]
-    //    {
-    //        Vector3.back,
-    //        Vector3.back,
-    //        Vector3.back,
-    //        Vector3.back
-    //    };
-    //    mesh.normals = normals;
-    //
-    //    Vector2[] uv = new Vector2[4]
-    //    {
-    //        new Vector2(0, 0),
-    //        new Vector2(1, 0),
-    //        new Vector2(0, 1),
-    //        new Vector2(1, 1)
-    //    };
-    //    mesh.uv = uv;
-    //
-    //    meshFilter.mesh = mesh;
-    //
-    //    newQuad.SetActive(false);
-    //}//end spawnNewQuad()
-
 
     List<GameObject> ReadCalibration()
     {

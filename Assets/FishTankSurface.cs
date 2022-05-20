@@ -50,11 +50,20 @@ public class FishTankSurface : MonoBehaviour
         m[3, 3] = 1.0f;
     }
 
+    private void OnDrawGizmos()
+    {
+        Gizmos.DrawLine(topLeft, topRight);
+        Gizmos.DrawLine(topRight, bottomRight);
+        Gizmos.DrawLine(bottomRight, bottomLeft);
+        Gizmos.DrawLine(bottomLeft, topLeft);
+
+        Gizmos.DrawRay(center, normal * 0.5f);
+    }
 }
 
 #if UNITY_EDITOR
 [CustomEditor(typeof(FishTankSurface))]
-public class FishTankSurfaceVisualizaer : Editor
+public class FishTankSurfaceVisualizer : Editor
 {
     // Custom in-scene UI for when ExampleScript
     // component is selected.
@@ -73,10 +82,17 @@ public class FishTankSurfaceVisualizaer : Editor
             tr.TransformPoint(t.bottomLeft),
             tr.TransformPoint(t.topLeft)
         );
-        // display object "value" in scene
+
         GUI.color = color;
         Handles.Label(center, "Screen " + t.screenNumber.ToString());
-    
+        Handles.ArrowHandleCap(
+            0,
+            t.center,
+            tr.rotation * Quaternion.LookRotation(t.normal),
+            0.5f,
+            EventType.Repaint
+        );
+
         Handles.color = Color.black;
         Handles.Label(tr.TransformPoint(t.topLeft), "Top Left");
         Handles.Label(tr.TransformPoint(t.topRight), "Top Right");
