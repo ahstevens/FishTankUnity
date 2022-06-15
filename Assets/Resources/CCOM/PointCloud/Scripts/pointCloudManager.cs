@@ -182,6 +182,10 @@ public class pointCloudManager : MonoBehaviour
 
         isWaitingToLoad = true;
 
+#if UNITY_EDITOR
+        EditorUtility.DisplayProgressBar("Point Cloud Plugin", "Loading Point Cloud...", 0f);
+#endif
+
         if (pointClouds == null)
             pointClouds = new List<pointCloud>();
 
@@ -415,7 +419,17 @@ public class pointCloudManager : MonoBehaviour
             pointCloudGameObject.transform.localScale = Vector3.one;
 
             isWaitingToLoad = false;
+
+#if UNITY_EDITOR
+            EditorUtility.ClearProgressBar();
+#endif
         }
+#if UNITY_EDITOR
+        else
+        {
+            EditorUtility.DisplayProgressBar("Point Cloud Plugin", "Loading Point Cloud...", UnityEngine.Random.Range(0f, 1f));
+        }
+#endif
     }
 
     void OnValidate()
