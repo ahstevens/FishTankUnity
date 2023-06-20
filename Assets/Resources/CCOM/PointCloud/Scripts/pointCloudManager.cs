@@ -758,6 +758,9 @@ public class pointCloudManager : MonoBehaviour
 
     public static void OnSceneSaveCallback(Scene scene)
     {
+        if (!_instance)
+            return;
+
         pointCloud[] pointCloudsInScene = _instance.getPointCloudsInScene();
         for (int i = 0; i < pointCloudsInScene.Length; i++)
         {

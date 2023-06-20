@@ -101,6 +101,8 @@ public class NMEAEmulator : MonoBehaviour
             point[0] = georef.realWorldX + (double)this.transform.position.x;
             point[1] = georef.realWorldZ + (double)this.transform.position.z;
 
+            //Debug.Log($"{point[0]}, {point[1]}");
+
             // heights don't matter
             double[] elev = { 0 };
 
