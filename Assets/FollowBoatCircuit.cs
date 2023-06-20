@@ -5,10 +5,12 @@ using UnityEngine;
 public class FollowBoatCircuit : MonoBehaviour
 {
     private List<Vector3> circuitMarkerPositions;
-    private int numMarkers = 4;
+    private int numMarkers = 2;
     private int currentTargetMarker;
 
     public int startingMarker;
+
+    public float stepSize = 10f;
 
     // Use this for initialization
     void Start()
@@ -37,7 +39,7 @@ public class FollowBoatCircuit : MonoBehaviour
             currentTargetMarker = getNextMarkerIndexNum(currentTargetMarker);
         }
 
-        float step = 10f * Time.deltaTime;
+        float step = stepSize * Time.deltaTime;
         gameObject.transform.position = Vector3.MoveTowards(gameObject.transform.position, circuitMarkerPositions[currentTargetMarker], step);
         gameObject.transform.rotation = Quaternion.LookRotation(circuitMarkerPositions[currentTargetMarker] - gameObject.transform.position);
     }

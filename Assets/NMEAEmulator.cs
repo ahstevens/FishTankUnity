@@ -5,6 +5,7 @@ using System;
 using System.Text;
 using System.Net;
 using System.Net.Sockets;
+using DotSpatial.Projections;
 using CCOM.NMEA;
 
 
@@ -89,30 +90,33 @@ public class NMEAEmulator : MonoBehaviour
 
     void UpdatePosition()
     {
+        if (pointCloudManager.instance.getPointCloudsInScene()[0].EPSG == 0 ||
+            pointCloudManager.instance.isWaitingToLoad ||
+            pointCloudManager.instance.getPointCloudsInScene().Length == 0)
+            return; 
+
         if (georef != null && sendObjectPosition)
         {
-            //SpatialReference src = new SpatialReference("");
-            //src.ImportFromProj4("+proj=utm +zone=15 +datum=WGS84 +no_defs");
-            //
-            //SpatialReference dst = new SpatialReference("");
-            //dst.ImportFromProj4("+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs");
+            double[] point = new double[2];
+            point[0] = georef.realWorldX + (double)this.transform.position.x;
+            point[1] = georef.realWorldZ + (double)this.transform.position.z;
 
-            /* -------------------------------------------------------------------- */
-            /*      making the transform                                            */
-            /* -------------------------------------------------------------------- */
-            //CoordinateTransformation ct = new CoordinateTransformation(src, dst);
-            double[] p = new double[3];
-            p[0] = georef.realWorldX + (double)this.transform.position.x;
-            p[1] = georef.realWorldZ + (double)this.transform.position.z;
-            p[2] = (double)this.transform.position.y;
-            //ct.TransformPoint(p);
+            // heights don't matter
+            double[] elev = { 0 };
+
+            // reproject the 3 coords to GPS coords (WGS84) for OnlineMaps
+            ProjectionInfo src = ProjectionInfo.FromEpsgCode(pointCloudManager.instance.getPointCloudsInScene()[0].EPSG);
+            
+            ProjectionInfo dest = ProjectionInfo.FromEpsgCode(4326);
+
+            Reproject.ReprojectPoints(point, elev, src, dest, 0, 1);
 
             //var latlon = LatLonConversions.ConvertUTMtoLatLon(p[0], p[1], 15, true, LatLonConversions.wgs84);
-            var latlon = LatLonConversions.ConvertUTMtoLatLon(785997.22, 3316376.84, 15, true, LatLonConversions.wgs84);
+            //var latlon = LatLonConversions.ConvertUTMtoLatLon(785997.22, 3316376.84, 15, true, LatLonConversions.wgs84);
 
-            nmeaPosition.SetPosition(latlon.Latitude, latlon.Longitude);
+            nmeaPosition.SetPosition(point[1], point[0]);
 
-            nmeaPosition.SetAltitude(p[2]);
+            nmeaPosition.SetAltitude(elev[0]);
         }
         //else if (latString != null && latString != "" && lonString != null && lonString != "")
         //{

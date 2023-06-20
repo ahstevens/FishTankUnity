@@ -121,13 +121,20 @@ public class pointCloudManager : MonoBehaviour
     public Camera frustumCullingTestCamera;
 #endif // FRUSTUMCULLING_TEST
 
-    public static bool isWaitingToLoad = false;
+    public bool isWaitingToLoad = false;
     public static string filePathForAsyncLoad = "";
     public static float localLODTransitionDistance = 3500.0f;
     public static bool isLookingForClosestPoint = false;
     public static bool highlightDeletedPoints = false;
 
     private static bool renderPointClouds = true;
+
+    private static pointCloudManager _instance;
+
+    public static pointCloudManager instance
+    {
+        get { return _instance; }
+    }
 
     static private GEOReference getReferenceScript()
     {
@@ -180,7 +187,7 @@ public class pointCloudManager : MonoBehaviour
             toLoadList = new List<string>();
         toLoadList.Add(newID);
 
-        isWaitingToLoad = true;
+        _instance.isWaitingToLoad = true;
 
 #if UNITY_EDITOR
         EditorUtility.DisplayProgressBar("Point Cloud Plugin", "Loading Point Cloud...", 0f);
@@ -277,7 +284,7 @@ public class pointCloudManager : MonoBehaviour
 		Marshal.FreeHGlobal(IDStrPtr);
     }
 
-    public static pointCloud[] getPointCloudsInScene()
+    public pointCloud[] getPointCloudsInScene()
     {
         pointCloud[] pointClouds = (pointCloud[])GameObject.FindObjectsOfType(typeof(pointCloud));
         return pointClouds;
@@ -311,7 +318,7 @@ public class pointCloudManager : MonoBehaviour
 
     public static void checkIsAsyncLoadFinished()
     {
-        if (!isWaitingToLoad)
+        if (!_instance.isWaitingToLoad)
             return;
 
         if (IsLastAsyncLoadFinished() && toLoadList.Count > 0)
@@ -418,7 +425,7 @@ public class pointCloudManager : MonoBehaviour
             pointCloudGameObject.transform.localRotation = Quaternion.identity;
             pointCloudGameObject.transform.localScale = Vector3.one;
 
-            isWaitingToLoad = false;
+            _instance.isWaitingToLoad = false;
 
 #if UNITY_EDITOR
             EditorUtility.ClearProgressBar();
@@ -459,6 +466,10 @@ public class pointCloudManager : MonoBehaviour
 			Marshal.FreeHGlobal(strPtr);
 			Marshal.FreeHGlobal(IDStrPtr);
         }
+    }
+    private void Awake()
+    {
+        _instance = this;
     }
 
     void Start()
@@ -719,7 +730,7 @@ public class pointCloudManager : MonoBehaviour
             float[] worldArray = new float[16];
             GCHandle pointerWorld;
 
-            pointCloud[] pointClouds_ = getPointCloudsInScene();
+            pointCloud[] pointClouds_ = _instance.getPointCloudsInScene();
             for (int i = 0; i < pointClouds_.Length; i++)
             {
                 world = pointClouds_[i].gameObject.transform.localToWorldMatrix;
@@ -747,7 +758,7 @@ public class pointCloudManager : MonoBehaviour
 
     public static void OnSceneSaveCallback(Scene scene)
     {
-        pointCloud[] pointCloudsInScene = getPointCloudsInScene();
+        pointCloud[] pointCloudsInScene = _instance.getPointCloudsInScene();
         for (int i = 0; i < pointCloudsInScene.Length; i++)
         {
             string extension = Path.GetExtension(pointCloudsInScene[i].pathToRawData);

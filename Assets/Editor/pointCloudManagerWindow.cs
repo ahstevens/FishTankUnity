@@ -252,7 +252,7 @@ public class pointCloudManagerWindow : EditorWindow
         GUI.enabled = true;
 #endif // BENCHMARK
 
-        if (pointCloudManager.isWaitingToLoad)
+        if (pointCloudManager.instance.isWaitingToLoad)
             GUI.enabled = false;
 
         if (GUILayout.Button("Import LAZ file"))
