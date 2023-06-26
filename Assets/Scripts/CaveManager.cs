@@ -26,6 +26,8 @@ public class CaveManager : MonoBehaviour
     private int numberScreens;
     private float lastCompositingCameraOrthoSize;
 
+    public LayerMask layersNotRendered;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -60,7 +62,9 @@ public class CaveManager : MonoBehaviour
             thisCamera.GetComponent<Camera>().nearClipPlane = 0.1f;
             thisCamera.GetComponent<Camera>().farClipPlane = 10000;
             thisCamera.GetComponent<Camera>().targetTexture = renderTextures[i];
-            thisCamera.GetComponent<Camera>().cullingMask = ~(1 << LayerMask.NameToLayer("CompCamera"));
+
+            thisCamera.GetComponent<Camera>().cullingMask = ~layersNotRendered;
+
             thisCamera.transform.parent = viewer.transform;
             thisCamera.transform.SetPositionAndRotation(viewer.transform.position, viewer.transform.rotation);
 
