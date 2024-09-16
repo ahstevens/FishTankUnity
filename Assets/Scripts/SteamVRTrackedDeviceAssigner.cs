@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 using Valve.VR;
 
 public class SteamVRTrackedDeviceAssigner : MonoBehaviour
@@ -20,7 +21,7 @@ public class SteamVRTrackedDeviceAssigner : MonoBehaviour
         if (GetTrackerID())
             AddTrackerComponentToGameObjects();
 
-        if (Input.GetKeyDown(KeyCode.T))
+        if (Keyboard.current.tKey.wasPressedThisFrame)
             foreach (var g in gameObjectsToAssignTracker)
             {
                 var trackedDeviceComponent = g.GetComponent<SteamVR_TrackedObject>();

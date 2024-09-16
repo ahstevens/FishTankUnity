@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using System;
 using System.IO;
 using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem;
 #if UNITY_EDITOR
 using UnityEditor;				  
 using UnityEditor.SceneManagement;
@@ -638,7 +639,7 @@ public class pointCloudManager : MonoBehaviour
         }
 #endif // AABB_TEST
 
-        if (Input.GetKeyDown(KeyCode.P))
+        if (Keyboard.current.pKey.wasPressedThisFrame)
         {
             renderPointClouds = !renderPointClouds;
         }

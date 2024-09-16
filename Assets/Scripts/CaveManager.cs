@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Xml;
 using UnityEngine;
-using UnityEngine.Rendering;
+using UnityEngine.InputSystem;
 
 public class CaveManager : MonoBehaviour
 {
@@ -50,7 +50,7 @@ public class CaveManager : MonoBehaviour
 
         for (int i = 0; i < numberScreens; i++)
         {
-            RenderTexture thisRenderTexture = new RenderTexture(renderTextureWidth, renderTextureHeight, 24, RenderTextureFormat.ARGB32);
+            RenderTexture thisRenderTexture = new(renderTextureWidth, renderTextureHeight, 24, RenderTextureFormat.ARGB32);
             //thisRenderTexture.antiAliasing = 2;  //what do?
             thisRenderTexture.Create();
             renderTextures.Add(thisRenderTexture);
@@ -84,7 +84,10 @@ public class CaveManager : MonoBehaviour
         ResizeCompositingQuads();
 
         RecalculateProjectionsFromViewpoint(viewer.transform.localPosition);
+        
 
+        if (Keyboard.current.qKey.wasPressedThisFrame || Keyboard.current.escapeKey.wasPressedThisFrame)
+            Application.Quit();
     }//end Update()
 
     void ResizeCompositingQuads()

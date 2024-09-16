@@ -5,7 +5,8 @@ using UnityEngine;
 public class FollowBoatCircuit : MonoBehaviour
 {
     private List<Vector3> circuitMarkerPositions;
-    private int numMarkers = 2;
+    [SerializeField]
+    private int numMarkers;
     private int currentTargetMarker;
 
     public int startingMarker;
@@ -20,9 +21,20 @@ public class FollowBoatCircuit : MonoBehaviour
         for (int i = 0; i < numMarkers; i++)
         {
             string thisName = "BoatCircuit" + i;
-            GameObject thisMarker = GameObject.Find(thisName);
-            Vector3 thisLocation = thisMarker.transform.position;
-            circuitMarkerPositions.Add(thisLocation);
+
+            var pathObj = FindPathChild();
+
+            if (pathObj != null)
+            {
+                var marker = pathObj.Find(thisName);
+
+                if (marker != null)
+                    circuitMarkerPositions.Add(marker.position);
+                else
+                    Debug.Log("Child object not found: " + thisName);
+            }
+            else
+                Debug.Log("Path child object not found!");
         }
         currentTargetMarker = getNextMarkerIndexNum(startingMarker);
         gameObject.transform.position = circuitMarkerPositions[startingMarker];
@@ -58,5 +70,13 @@ public class FollowBoatCircuit : MonoBehaviour
         gameObject.transform.position = circuitMarkerPositions[startingMarker];
         gameObject.transform.rotation = Quaternion.LookRotation(gameObject.transform.position - circuitMarkerPositions[getNextMarkerIndexNum(startingMarker)]);
     }
+    Transform FindPathChild()
+    {
+        var headList = transform.gameObject.GetComponentsInChildren<Transform>(true);
 
+        foreach (Transform it in headList)
+            if (it.name == "Path")
+                return it;
+        return null;
+    }
 }
