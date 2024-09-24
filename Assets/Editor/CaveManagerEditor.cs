@@ -18,20 +18,5 @@ public class CaveManagerEditor : Editor
 
         // Custom form for Player Preferences
         CaveManager cm = (CaveManager)target;
-
-        // Custom Button with Image as Thumbnail
-        if (GUILayout.Button("Load FishTank Config", GUILayout.Width(200), GUILayout.Height(50))) //8
-        {
-            string currentFile = EditorUtility.OpenFilePanel("Choose file...", "", "xml");
-            if (currentFile != "")
-            {
-                //load config file
-                Debug.Log("Config file " + currentFile + " loaded!");
-            }            
-            else
-            {
-                Debug.Log("No Config File Chosen!");
-            }            
-        }
     }
 }
