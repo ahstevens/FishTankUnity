@@ -21,6 +21,9 @@ public class NMEAEmulator : MonoBehaviour
     public int updateRateHz = 50;
 
     [Header("Live Pose from GameObject")]
+    public int sourceEPSG = 26915;
+
+    [Header("Live Pose from GameObject")]
     public bool sendObjectPosition;
     public bool sendObjectHeading;
 
@@ -90,11 +93,6 @@ public class NMEAEmulator : MonoBehaviour
 
     void UpdatePosition()
     {
-        if (pointCloudManager.instance.getPointCloudsInScene()[0].EPSG == 0 ||
-            pointCloudManager.instance.isWaitingToLoad ||
-            pointCloudManager.instance.getPointCloudsInScene().Length == 0)
-            return; 
-
         if (georef != null && sendObjectPosition)
         {
             double[] point = new double[2];
@@ -107,7 +105,7 @@ public class NMEAEmulator : MonoBehaviour
             double[] elev = { 0 };
 
             // reproject the 3 coords to GPS coords (WGS84) for OnlineMaps
-            ProjectionInfo src = ProjectionInfo.FromEpsgCode(pointCloudManager.instance.getPointCloudsInScene()[0].EPSG);
+            ProjectionInfo src = ProjectionInfo.FromEpsgCode(sourceEPSG);
             
             ProjectionInfo dest = ProjectionInfo.FromEpsgCode(4326);
 
